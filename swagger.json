@@ -3,7 +3,7 @@
   "info": {
     "title": "Syed's AI Assistant Portfolio Chatbot Platform API",
     "description": "Core orchestration and intelligence hub for Syed Azharuddin's portfolio chatbot platform ('Syed\\'s AI Assistant'). Manages session token quotas, database synchronization via direct Supabase REST queries, and Slack-integrated lockout resets. Designed for serverless deployment on GCP Cloud Run.",
-    "version": "1.1.0",
+    "version": "1.2.0",
     "contact": {
       "name": "Syed Azharuddin",
       "email": "syed.azharuddin@example.com"
@@ -265,6 +265,56 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "/api/slack-interaction": {
+      "post": {
+        "summary": "Slack Interaction Callback Router",
+        "description": "Triggered automatically by Slack's interactive servers when an administrator clicks the 'Approve Session' primary button inside a team channel lockout alert.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "payload"
+                ],
+                "properties": {
+                  "payload": {
+                    "type": "string",
+                    "description": "JSON string sent from Slack representing the action, visitor metadata, and button value containing the target sessionId.",
+                    "example": "{\"actions\":[{\"action_id\":\"approve_session\",\"value\":\"4a7b5d2c-8f9e-4c1d-8b0a-9d8e7f6c5b4a\"}]}"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Slack interaction parsed successfully and session reset.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "text": {
+                      "type": "string",
+                      "example": "✅ *Session `4a7b5d2c-8f9e-4c1d-8b0a-9d8e7f6c5b4a` has been successfully reset and approved by Admin.*"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request. Missing or invalid payload data."
+          },
+          "500": {
+            "description": "Internal Server Error."
           }
         }
       }

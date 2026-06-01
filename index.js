@@ -31,6 +31,7 @@ try {
 // Global Middleware Configuration
 app.use(cors());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true })); // Enable parsing of URL-encoded bodies for Slack Interactive Buttons
 
 // Native Centralized Logging Utility
 app.use((req, res, next) => {
@@ -54,12 +55,52 @@ if (swaggerDocument.openapi) {
 const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
 const ai = new GoogleGenAI(apiKey ? { apiKey } : {});
 
-// Slack Lockout Notification Dispatcher (Asynchronous & Non-Blocking)
+// Slack Lockout Notification Dispatcher (Asynchronous, Non-Blocking, using Block Kit & Interactive Buttons)
 function sendSlackLockoutAlert(name, email, sessionId) {
   if (!process.env.SLACK_WEBHOOK_URL) return;
 
   const slackBody = {
-    text: `🚨 *Token Limit Warning: Syed's AI Assistant Action Required* 🚨\n*Visitor Identity Name:* ${name}\n*Contact Email:* ${email}\n*Target Session Key:* \`${sessionId}\``
+    blocks: [
+      {
+        type: "section",
+        text: {
+          type: "mrkdwn",
+          text: "🚨 *Token Limit Warning: Syed's AI Assistant Action Required* 🚨"
+        }
+      },
+      {
+        type: "section",
+        fields: [
+          {
+            type: "mrkdwn",
+            text: `*Visitor Identity Name:*\n${name}`
+          },
+          {
+            type: "mrkdwn",
+            text: `*Contact Email:*\n${email}`
+          },
+          {
+            type: "mrkdwn",
+            text: `*Target Session Key:*\n\`${sessionId}\``
+          }
+        ]
+      },
+      {
+        type: "actions",
+        elements: [
+          {
+            type: "button",
+            text: {
+              type: "plain_text",
+              text: "✅ Approve Session"
+            },
+            style: "primary",
+            action_id: "approve_session",
+            value: sessionId
+          }
+        ]
+      }
+    ]
   };
 
   fetch(process.env.SLACK_WEBHOOK_URL, {
@@ -353,7 +394,7 @@ app.post('/api/submit-auth', async (req, res) => {
       console.error('Database Submit-Auth Sync Isolation Error:', dbError.message);
     }
 
-    // Detached background promise for Slack alert
+    // Detached background promise for Slack Block Kit alert with interactive button
     try {
       sendSlackLockoutAlert(name, email, sessionId);
     } catch (slackError) {
@@ -405,6 +446,50 @@ app.post('/api/slack-webhook-approval', async (req, res) => {
 
   } catch (error) {
     console.error('CRITICAL: Administrative Webhook Approval Exception Trace:', error.stack || error.message);
+    return res.status(500).json({
+      error: "The infrastructure failed to validate processing constraints."
+    });
+  }
+});
+
+// CORE API ROUTE 4: POST `/api/slack-interaction`
+app.post('/api/slack-interaction', async (req, res) => {
+  try {
+    if (!req.body.payload) {
+      return res.status(400).json({ error: "Missing interactive payload." });
+    }
+
+    const payload = JSON.parse(req.body.payload);
+    const action = payload.actions?.[0];
+
+    if (!action || action.action_id !== 'approve_session') {
+      return res.status(400).json({ error: "Unsupported interaction action." });
+    }
+
+    const targetSessionId = action.value;
+    if (!targetSessionId) {
+      return res.status(400).json({ error: "Missing session ID in interactive action." });
+    }
+
+    // Reset and approve the session in Supabase
+    try {
+      await patchSupabaseSession(targetSessionId, {
+        is_approved: true,
+        approval_status: 'APPROVED_BY_SLACK',
+        total_tokens_consumed: 0
+      });
+    } catch (dbError) {
+      console.error('Database Slack interactive reset sync failed:', dbError.message);
+      return res.status(500).json({ error: "Failed to reset session in database." });
+    }
+
+    // Return message to replace the original Slack notification with a success confirmation
+    return res.status(200).json({
+      text: `✅ *Session \`${targetSessionId}\` has been successfully reset and approved by Admin.*`
+    });
+
+  } catch (error) {
+    console.error('CRITICAL: Slack Interaction Exception Trace:', error.stack || error.message);
     return res.status(500).json({
       error: "The infrastructure failed to validate processing constraints."
     });
