@@ -1,6 +1,6 @@
-# Azhar-Bot Backend API Gateway
+# Syed's AI Assistant Backend API Gateway
 
-This repository contains the production-grade orchestration and artificial intelligence backend engine for Syed Azharuddin's portfolio chatbot platform (`Azhar-Bot`). 
+This repository contains the production-grade orchestration and artificial intelligence backend engine for Syed Azharuddin's portfolio chatbot platform (`Syed's AI Assistant`). 
 
 Designed using **Node.js Express** and strict **CommonJS** formatting, this backend operates serverless and scales to zero seamlessly on **GCP Cloud Run**.
 
@@ -83,7 +83,7 @@ The application will boot and expose:
 * **Response**:
   ```json
   {
-    "name": "Azhar-Bot Backend API",
+    "name": "Syed's AI Assistant Backend API",
     "status": "Healthy",
     "docs": "/api-docs"
   }
@@ -127,11 +127,11 @@ To deploy this backend as a serverless container on Google Cloud Run:
 
 ```bash
 # 1. Build and submit container image to Artifact Registry
-gcloud builds submit --tag gcr.io/your-gcp-project-id/azhar-bot-backend
+gcloud builds submit --tag gcr.io/your-gcp-project-id/syeds-ai-assistant-backend
 
 # 2. Deploy service on Cloud Run with environment overrides
-gcloud run deploy azhar-bot-backend \
-  --image gcr.io/your-gcp-project-id/azhar-bot-backend \
+gcloud run deploy syeds-ai-assistant-backend \
+  --image gcr.io/your-gcp-project-id/syeds-ai-assistant-backend \
   --platform managed \
   --region us-central1 \
   --allow-unauthenticated \

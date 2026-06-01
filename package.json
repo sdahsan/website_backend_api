@@ -1,5 +1,5 @@
 {
-  "name": "azhar-bot-backend",
+  "name": "syeds-ai-assistant-backend",
   "version": "1.0.0",
   "description": "Orchestration & AI engine for Syed Azharuddin's portfolio chatbot platform, designed for GCP Cloud Run.",
   "main": "index.js",

@@ -61,7 +61,7 @@ function sendSlackNotification(userName, sessionId, message) {
   if (!process.env.SLACK_WEBHOOK_URL) return;
 
   const slackBody = {
-    text: `🔔 *Azhar-Bot Portfolio Interaction Alert* 🔔\n*Visitor Identifier:* ${userName}\n*Session Token Reference:* ${sessionId}\n*Ingested Query:* ${message}`
+    text: `🔔 *Syed's AI Assistant Portfolio Interaction Alert* 🔔\n*Visitor Identifier:* ${userName}\n*Session Token Reference:* ${sessionId}\n*Ingested Query:* ${message}`
   };
 
   fetch(process.env.SLACK_WEBHOOK_URL, {
@@ -204,7 +204,7 @@ app.post('/api/chat', authenticateApiKey, async (req, res) => {
     const userTurn = { role: 'user', parts: [{ text: message }] };
     chatHistory.push(userTurn);
 
-    const systemInstructionText = `You are "Azhar-Bot", representing Syed Azharuddin.
+    const systemInstructionText = `You are "Syed's AI Assistant", representing Syed Azharuddin.
 The visitor you are communicating with is named: ${userName}.
 
 Here is Syed Azharuddin's master professional profile context:
@@ -267,7 +267,7 @@ Operational Directives:
 // Root Route
 app.get('/', (req, res) => {
   res.status(200).json({
-    name: "Azhar-Bot Backend API",
+    name: "Syed's AI Assistant Backend API",
     status: "Healthy",
     docs: "/api-docs"
   });
@@ -275,5 +275,5 @@ app.get('/', (req, res) => {
 
 // Start Server
 app.listen(PORT, () => {
-  console.log(`Azhar-Bot backend server listening dynamically on port ${PORT}`);
+  console.log(`Syed's AI Assistant backend server listening dynamically on port ${PORT}`);
 });

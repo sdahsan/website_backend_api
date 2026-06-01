@@ -1,8 +1,8 @@
 {
   "openapi": "3.0.3",
   "info": {
-    "title": "Azhar-Bot Portfolio Chatbot Platform API",
-    "description": "Core orchestration and intelligence hub for Syed Azharuddin's portfolio chatbot platform ('Azhar-Bot'). Designed for serverless deployment on GCP Cloud Run.",
+    "title": "Syed's AI Assistant Portfolio Chatbot Platform API",
+    "description": "Core orchestration and intelligence hub for Syed Azharuddin's portfolio chatbot platform ('Syed\\'s AI Assistant'). Designed for serverless deployment on GCP Cloud Run.",
     "version": "1.0.0",
     "contact": {
       "name": "Syed Azharuddin",
@@ -18,8 +18,8 @@
   "paths": {
     "/api/chat": {
       "post": {
-        "summary": "Interact with Azhar-Bot AI Agent",
-        "description": "Process a conversation turn with Azhar-Bot. Manages session retrieval/creation via Supabase, dispatches real-time alerts to Slack, queries Gemini using historical context, and saves updated conversation turns.",
+        "summary": "Interact with Syed's AI Assistant AI Agent",
+        "description": "Process a conversation turn with Syed's AI Assistant. Manages session retrieval/creation via Supabase, dispatches real-time alerts to Slack, queries Gemini using historical context, and saves updated conversation turns.",
         "security": [
           {
             "BearerAuth": []
