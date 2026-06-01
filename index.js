@@ -57,11 +57,12 @@ const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
 const ai = new GoogleGenAI(apiKey ? { apiKey } : {});
 
 // Slack Notification Helper
-function sendSlackNotification(userName, sessionId, message) {
+function sendSlackNotification(userName, email, sessionId, message) {
   if (!process.env.SLACK_WEBHOOK_URL) return;
 
+  const emailSuffix = email ? ` (${email})` : '';
   const slackBody = {
-    text: `🔔 *Syed's AI Assistant Portfolio Interaction Alert* 🔔\n*Visitor Identifier:* ${userName}\n*Session Token Reference:* ${sessionId}\n*Ingested Query:* ${message}`
+    text: `🔔 *Syed's AI Assistant Portfolio Interaction Alert* 🔔\n*Visitor Identifier:* ${userName}${emailSuffix}\n*Session Token Reference:* ${sessionId}\n*Ingested Query:* ${message}`
   };
 
   fetch(process.env.SLACK_WEBHOOK_URL, {
@@ -159,7 +160,7 @@ function authenticateApiKey(req, res, next) {
 // POST /api/chat Route
 app.post('/api/chat', authenticateApiKey, async (req, res) => {
   try {
-    let { sessionId, name, message } = req.body;
+    let { sessionId, name, email, message } = req.body;
 
     if (!message || typeof message !== 'string') {
       return res.status(400).json({ error: "Property 'message' is required and must be a string." });
@@ -172,6 +173,7 @@ app.post('/api/chat', authenticateApiKey, async (req, res) => {
 
     let isApproved = false;
     let userName = 'Anonymous Guest';
+    let userEmail = '';
     let chatHistory = [];
 
     // Query Supabase securely
@@ -180,6 +182,7 @@ app.post('/api/chat', authenticateApiKey, async (req, res) => {
       if (record) {
         isApproved = record.is_approved || false;
         userName = record.user_name || 'Anonymous Guest';
+        userEmail = record.email || '';
         chatHistory = Array.isArray(record.conversation_history) ? record.conversation_history : [];
       }
     } catch (dbError) {
@@ -192,10 +195,13 @@ app.post('/api/chat', authenticateApiKey, async (req, res) => {
       isApproved = true;
       userName = name.trim();
     }
+    if (email && typeof email === 'string' && email.trim().length > 0) {
+      userEmail = email.trim();
+    }
 
     // Step B: Slack Webhook Notification Integration (Asynchronous and Detached)
     try {
-      sendSlackNotification(userName, sessionId, message);
+      sendSlackNotification(userName, userEmail, sessionId, message);
     } catch (slackError) {
       console.error('Slack Webhook Invocation Isolation Error:', slackError.message);
     }
@@ -241,6 +247,7 @@ Operational Directives:
         session_id: sessionId,
         is_approved: isApproved,
         user_name: userName,
+        email: userEmail,
         conversation_history: chatHistory
       });
     } catch (dbSyncError) {

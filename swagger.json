@@ -46,6 +46,12 @@
                     "description": "Optional name of the visitor. Submitting a non-empty name triggers the authorization state and updates the visitor identifier.",
                     "example": "John Doe"
                   },
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "description": "Optional email of the visitor. Submitting a non-empty email links it to the session record in Supabase and includes it in team notifications.",
+                    "example": "john.doe@example.com"
+                  },
                   "message": {
                     "type": "string",
                     "description": "The incoming textual chat message/query from the user.",
