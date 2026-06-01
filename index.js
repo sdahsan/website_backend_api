@@ -134,8 +134,30 @@ async function upsertSupabaseSession(sessionData) {
   }
 }
 
+// Authorization Middleware
+function authenticateApiKey(req, res, next) {
+  const gatewayKey = process.env.API_GATEWAY_KEY;
+
+  // Skip authentication if the key is not set in the environment variables (e.g., local development)
+  if (!gatewayKey) {
+    return next();
+  }
+
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: "Unauthorized: Missing or malformed Authorization Bearer header." });
+  }
+
+  const token = authHeader.split(' ')[1];
+  if (token !== gatewayKey) {
+    return res.status(403).json({ error: "Forbidden: Invalid authorization token." });
+  }
+
+  next();
+}
+
 // POST /api/chat Route
-app.post('/api/chat', async (req, res) => {
+app.post('/api/chat', authenticateApiKey, async (req, res) => {
   try {
     let { sessionId, name, message } = req.body;
 

@@ -20,6 +20,11 @@
       "post": {
         "summary": "Interact with Azhar-Bot AI Agent",
         "description": "Process a conversation turn with Azhar-Bot. Manages session retrieval/creation via Supabase, dispatches real-time alerts to Slack, queries Gemini using historical context, and saves updated conversation turns.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -97,6 +102,16 @@
             }
           }
         }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "APIKey",
+        "description": "API Gateway authentication. Set process.env.API_GATEWAY_KEY on the backend, and supply the same key in the header as 'Authorization: Bearer <API_GATEWAY_KEY>'."
       }
     }
   }
