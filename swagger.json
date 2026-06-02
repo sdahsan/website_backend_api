@@ -318,6 +318,57 @@
           }
         }
       }
+    },
+    "/api/session-status/{sessionId}": {
+      "get": {
+        "summary": "Check Session Lockout and Approval Status",
+        "description": "Lightweight check for session status to allow the React frontend to discover if the administrator has approved the session via Slack yet.",
+        "parameters": [
+          {
+            "name": "sessionId",
+            "in": "path",
+            "required": true,
+            "description": "The session UUID tracking key to query.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "example": "4a7b5d2c-8f9e-4c1d-8b0a-9d8e7f6c5b4a"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Session status successfully retrieved.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "sessionId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "example": "4a7b5d2c-8f9e-4c1d-8b0a-9d8e7f6c5b4a"
+                    },
+                    "requiresAuthForm": {
+                      "type": "boolean",
+                      "description": "True if the session is currently locked and waiting for approval. False if the session is active or has been reset by the administrator.",
+                      "example": false
+                    },
+                    "approvalStatus": {
+                      "type": "string",
+                      "description": "The exact approval status of the session in Supabase: PENDING_THRESHOLD, BLOCKED_WAITING_APPROVAL, or APPROVED_BY_SLACK.",
+                      "example": "APPROVED_BY_SLACK"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error."
+          }
+        }
+      }
     }
   },
   "components": {

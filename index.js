@@ -496,6 +496,46 @@ app.post('/api/slack-interaction', async (req, res) => {
   }
 });
 
+// CORE API ROUTE 5: GET `/api/session-status/:sessionId`
+app.get('/api/session-status/:sessionId', async (req, res) => {
+  try {
+    const { sessionId } = req.params;
+
+    if (!sessionId) {
+      return res.status(400).json({ error: "Parameter 'sessionId' is required." });
+    }
+
+    let record = null;
+    try {
+      record = await getSupabaseSession(sessionId);
+    } catch (dbError) {
+      console.error('Database Session Status Fetch Isolation Error:', dbError.message);
+    }
+
+    if (!record) {
+      return res.status(200).json({
+        sessionId,
+        requiresAuthForm: false,
+        approvalStatus: 'PENDING_THRESHOLD'
+      });
+    }
+
+    const requiresAuthForm = record.approval_status === 'BLOCKED_WAITING_APPROVAL';
+
+    return res.status(200).json({
+      sessionId,
+      requiresAuthForm,
+      approvalStatus: record.approval_status
+    });
+
+  } catch (error) {
+    console.error('CRITICAL: Session Status Exception Trace:', error.stack || error.message);
+    return res.status(500).json({
+      error: "The infrastructure failed to validate processing constraints."
+    });
+  }
+});
+
 // Health check and root route
 app.get('/', (req, res) => {
   res.status(200).json({
