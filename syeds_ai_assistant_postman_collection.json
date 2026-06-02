@@ -1,0 +1,203 @@
+{
+  "info": {
+    "_postman_id": "4a7b5d2c-8f9e-4c1d-8b0a-9d8e7f6c5b4a",
+    "name": "Syed's AI Assistant API Gateway",
+    "description": "Postman Collection for Syed's AI Assistant Chatbot Backend API. Includes endpoints for conversational chat, token budgeting, session status polling, visitor contact logging, and administrative Slack overrides.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Health Check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            ""
+          ]
+        },
+        "description": "Verifies that the backend server is running and healthy."
+      },
+      "response": []
+    },
+    {
+      "name": "2. Chat Turn (Grounded Conversation)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"sessionId\": \"{{sessionId}}\",\n  \"message\": \"What is your core technical stack?\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/chat",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "chat"
+          ]
+        },
+        "description": "Processes a chat turn with Syed's grounded Gemini bot. Automatically manages rolling history, evaluates token consumption, and triggers lockout if the threshold (>500 tokens) is exceeded."
+      },
+      "response": []
+    },
+    {
+      "name": "3. Check Session Status",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/session-status/{{sessionId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "session-status",
+            "{{sessionId}}"
+          ]
+        },
+        "description": "Lightweight endpoint to check if the session is locked or approved. Used by the React frontend for status polling."
+      },
+      "response": []
+    },
+    {
+      "name": "4. Submit Visitor Identity (Form Submission)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"sessionId\": \"{{sessionId}}\",\n  \"name\": \"Jane Doe\",\n  \"email\": \"jane.doe@example.com\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/submit-auth",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "submit-auth"
+          ]
+        },
+        "description": "Triggered when the visitor submits their name and email in the lockout form. Logs the details in the database and streams a primary Block Kit alert notification to the Slack channel."
+      },
+      "response": []
+    },
+    {
+      "name": "5. Slack Interactivity Webhook",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/x-www-form-urlencoded",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            {
+              "key": "payload",
+              "value": "{\"actions\":[{\"action_id\":\"approve_session\",\"value\":\"{{sessionId}}\"}]}",
+              "description": "Mocked Block Kit button action payload containing the target sessionId to reset and approve",
+              "type": "text"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/slack-interaction",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "slack-interaction"
+          ]
+        },
+        "description": "Simulates Slack interactive button click callback. Decodes the payload, resets total token counts to 0, sets is_approved to true, sets approval_status to APPROVED_BY_SLACK in Supabase, and returns a Block Kit confirmation message."
+      },
+      "response": []
+    },
+    {
+      "name": "6. Administrative Manual Override (Passphrase Reset)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"secretToken\": \"Syed!Orbit#Azhar_Matrix92$\",\n  \"targetSessionId\": \"{{sessionId}}\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/slack-webhook-approval",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "slack-webhook-approval"
+          ]
+        },
+        "description": "Secured administrative manual override. Requires the secret administrative passphrase (matching INTERNAL_SECRET_PASSPHRASE in .env) to manually approve and unlock the session in the database."
+      },
+      "response": []
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "sessionId",
+      "value": "3a397136-b314-49f5-ba45-6c800effda07",
+      "type": "string"
+    }
+  ]
+}

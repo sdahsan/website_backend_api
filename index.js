@@ -241,7 +241,8 @@ app.post('/api/chat', authenticateApiKey, async (req, res) => {
     }
 
     // Step A: Session Resolution & Status Evaluation
-    if (!sessionId) {
+    const uuidRegex = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
+    if (!sessionId || !uuidRegex.test(sessionId)) {
       sessionId = uuidv4();
     }
 
@@ -275,7 +276,23 @@ app.post('/api/chat', authenticateApiKey, async (req, res) => {
     }
 
     // Hard Lock Check
-    if (record.approval_status === 'BLOCKED_WAITING_APPROVAL') {
+    if (
+      record.approval_status === 'BLOCKED_WAITING_APPROVAL' ||
+      (record.total_tokens_consumed > 500 && record.approval_status !== 'APPROVED_BY_SLACK')
+    ) {
+      // Ensure the database reflects the locked status if not already set
+      if (record.approval_status !== 'BLOCKED_WAITING_APPROVAL') {
+        try {
+          await patchSupabaseSession(sessionId, {
+            is_approved: false,
+            approval_status: 'BLOCKED_WAITING_APPROVAL'
+          });
+          record.approval_status = 'BLOCKED_WAITING_APPROVAL';
+        } catch (dbPatchError) {
+          console.error('Database Lock Status Correction Isolation Error:', dbPatchError.message);
+        }
+      }
+
       res.locals.tokenFootprint = record.total_tokens_consumed;
       return res.status(200).json({
         sessionId,
@@ -307,6 +324,7 @@ app.post('/api/chat', authenticateApiKey, async (req, res) => {
     if (totalTokens > 500 && record.approval_status !== 'APPROVED_BY_SLACK') {
       try {
         await patchSupabaseSession(sessionId, {
+          is_approved: false,
           approval_status: 'BLOCKED_WAITING_APPROVAL',
           conversation_history: simulatedHistory,
           total_tokens_consumed: totalTokens
@@ -455,15 +473,22 @@ app.post('/api/slack-webhook-approval', async (req, res) => {
 // CORE API ROUTE 4: POST `/api/slack-interaction`
 app.post('/api/slack-interaction', async (req, res) => {
   try {
-    if (!req.body.payload) {
-      return res.status(400).json({ error: "Missing interactive payload." });
+    let payload;
+    if (req.body.payload) {
+      if (typeof req.body.payload === 'string') {
+        payload = JSON.parse(req.body.payload);
+      } else {
+        payload = req.body.payload;
+      }
+    } else {
+      payload = req.body;
     }
 
-    const payload = JSON.parse(req.body.payload);
-    const action = payload.actions?.[0];
+    const actions = payload.actions || [];
+    const action = actions.find(a => a.action_id === 'approve_session');
 
-    if (!action || action.action_id !== 'approve_session') {
-      return res.status(400).json({ error: "Unsupported interaction action." });
+    if (!action) {
+      return res.status(400).json({ error: "Unsupported interaction action or missing approve_session action." });
     }
 
     const targetSessionId = action.value;
@@ -501,8 +526,9 @@ app.get('/api/session-status/:sessionId', async (req, res) => {
   try {
     const { sessionId } = req.params;
 
-    if (!sessionId) {
-      return res.status(400).json({ error: "Parameter 'sessionId' is required." });
+    const uuidRegex = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
+    if (!sessionId || !uuidRegex.test(sessionId)) {
+      return res.status(400).json({ error: "Parameter 'sessionId' must be a valid UUID." });
     }
 
     let record = null;
@@ -520,7 +546,9 @@ app.get('/api/session-status/:sessionId', async (req, res) => {
       });
     }
 
-    const requiresAuthForm = record.approval_status === 'BLOCKED_WAITING_APPROVAL';
+    const requiresAuthForm =
+      record.approval_status === 'BLOCKED_WAITING_APPROVAL' ||
+      (record.total_tokens_consumed > 500 && record.approval_status !== 'APPROVED_BY_SLACK');
 
     return res.status(200).json({
       sessionId,
