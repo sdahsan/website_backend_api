@@ -11,7 +11,7 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install only production dependencies for optimal image size and security
-RUN npm ci --only=production && npm cache clean --force
+RUN npm install --only=production && npm cache clean --force
 
 # Copy application source and configuration files
 COPY index.js swagger.json master_profile.md ./
