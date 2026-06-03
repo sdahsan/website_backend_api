@@ -11,7 +11,7 @@ steps:
   - name: 'gcr.io/cloud-builders/docker'
     args: [
       'push', 
-      me-central1-docker.pkg.dev/$PROJECT_ID/website-chatbot-repos/website-backend-api:$COMMIT_SHA'
+      'me-central1-docker.pkg.dev/$PROJECT_ID/website-chatbot-repos/website-backend-api:$COMMIT_SHA'
     ]
 
   # 3. Deploy it live to Cloud Run
