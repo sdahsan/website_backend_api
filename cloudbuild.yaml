@@ -23,6 +23,8 @@ steps:
       '--region', 'me-central1',
       '--min-instances', '0',
       '--max-instances', '1',
+      '--cpu-throttling',                     # <--- Inserts strict cost throttling safety
+      '--no-cpu-boost',                       # <--- Optional: Prevents extra cold-start CPU charges
       '--allow-unauthenticated'
     ]
 
