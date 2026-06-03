@@ -3,7 +3,7 @@ steps:
   - name: 'gcr.io/cloud-builders/docker'
     args: [
       'build', 
-      '-t', 'us-central1-docker.pkg.dev/$PROJECT_ID/cloudrun-repos/website-backend-api:$COMMIT_SHA', 
+      '-t', 'me-central1-docker.pkg.dev/$PROJECT_ID/website-chatbot-repos/website-backend-api:$COMMIT_SHA', 
       '.'
     ]
 
@@ -11,7 +11,7 @@ steps:
   - name: 'gcr.io/cloud-builders/docker'
     args: [
       'push', 
-      'us-central1-docker.pkg.dev/$PROJECT_ID/cloudrun-repos/website-backend-api:$COMMIT_SHA'
+      me-central1-docker.pkg.dev/$PROJECT_ID/website-chatbot-repos/website-backend-api:$COMMIT_SHA'
     ]
 
   # 3. Deploy it live to Cloud Run
@@ -19,15 +19,15 @@ steps:
     entrypoint: 'gcloud'
     args: [
       'run', 'deploy', 'website-backend-api',
-      '--image', 'us-central1-docker.pkg.dev/$PROJECT_ID/cloudrun-repos/website-backend-api:$COMMIT_SHA',
-      '--region', 'us-central1',
+      '--image', 'me-central1-docker.pkg.dev/$PROJECT_ID/website-chatbot-repos/website-backend-api:$COMMIT_SHA',
+      '--region', 'me-central1',
       '--min-instances', '0',
       '--max-instances', '1',
       '--allow-unauthenticated'
     ]
 
 images:
-  - 'us-central1-docker.pkg.dev/$PROJECT_ID/cloudrun-repos/website-backend-api:$COMMIT_SHA'
+  - 'me-central1-docker.pkg.dev/$PROJECT_ID/website-chatbot-repos/website-backend-api:$COMMIT_SHA'
 
 options:
   logging: CLOUD_LOGGING_ONLY
