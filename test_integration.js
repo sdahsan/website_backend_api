@@ -1,11 +1,10 @@
 const { v4: uuidv4 } = require('uuid');
 
 const BASE_URL = 'http://localhost:8080';
-const AUTH_TOKEN = 'Syed!Orbit#Azhar_Matrix92$'; // Matches fallback/env key
+const AUTH_TOKEN = 'Syed!Orbit#Azhar_Matrix92$'; // Used for administrative override endpoints if needed
 
 const HEADERS = {
-  'Content-Type': 'application/json',
-  'Authorization': `Bearer ${AUTH_TOKEN}`
+  'Content-Type': 'application/json'
 };
 
 async function runTests() {
@@ -36,11 +35,7 @@ async function runTests() {
 
     // 3. Status Check
     console.log('\n--- 3. Testing Session Status ---');
-    const statusRes1 = await fetch(`${BASE_URL}/api/session-status/${sessionId}`, {
-      headers: {
-        'Authorization': `Bearer ${AUTH_TOKEN}`
-      }
-    });
+    const statusRes1 = await fetch(`${BASE_URL}/api/session-status/${sessionId}`);
     console.log(`Status Check Status: ${statusRes1.status}`);
     const statusJson1 = await statusRes1.json();
     console.log('Response:', JSON.stringify(statusJson1, null, 2));
@@ -80,15 +75,11 @@ async function runTests() {
 
     // 6. Check status is BLOCKED_WAITING_APPROVAL
     console.log('\n--- 6. Verifying Locked Status ---');
-    const statusRes2 = await fetch(`${BASE_URL}/api/session-status/${sessionId}`, {
-      headers: {
-        'Authorization': `Bearer ${AUTH_TOKEN}`
-      }
-    });
+    const statusRes2 = await fetch(`${BASE_URL}/api/session-status/${sessionId}`);
     const statusJson2 = await statusRes2.json();
     console.log('Response:', JSON.stringify(statusJson2, null, 2));
 
-    // 7. Approve via Slack Interactivity Webhook (Publicly accessible by Slack)
+    // 7. Approve via Slack Interactivity Webhook
     console.log('\n--- 7. Testing Slack Approval Webhook ---');
     const slackPayload = {
       actions: [
@@ -109,11 +100,7 @@ async function runTests() {
 
     // 8. Check status is APPROVED_BY_SLACK
     console.log('\n--- 8. Verifying Approved Status ---');
-    const statusRes3 = await fetch(`${BASE_URL}/api/session-status/${sessionId}`, {
-      headers: {
-        'Authorization': `Bearer ${AUTH_TOKEN}`
-      }
-    });
+    const statusRes3 = await fetch(`${BASE_URL}/api/session-status/${sessionId}`);
     const statusJson3 = await statusRes3.json();
     console.log('Response:', JSON.stringify(statusJson3, null, 2));
 
