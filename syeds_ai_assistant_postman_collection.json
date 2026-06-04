@@ -5,6 +5,16 @@
     "description": "Postman Collection for Syed's AI Assistant Chatbot Backend API. Includes endpoints for conversational chat, token budgeting, session status polling, visitor contact logging, and administrative Slack overrides.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{apiGatewayKey}}",
+        "type": "string"
+      }
+    ]
+  },
   "item": [
     {
       "name": "1. Health Check",
@@ -105,6 +115,9 @@
     {
       "name": "5. Slack Interactivity Webhook",
       "request": {
+        "auth": {
+          "type": "noauth"
+        },
         "method": "POST",
         "header": [
           {
@@ -197,6 +210,11 @@
     {
       "key": "sessionId",
       "value": "3a397136-b314-49f5-ba45-6c800effda07",
+      "type": "string"
+    },
+    {
+      "key": "apiGatewayKey",
+      "value": "Syed!Orbit#Azhar_Matrix92$",
       "type": "string"
     }
   ]

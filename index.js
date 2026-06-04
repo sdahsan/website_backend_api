@@ -211,12 +211,7 @@ Operational Directives:
 
 // Authorization Middleware
 function authenticateApiKey(req, res, next) {
-  const gatewayKey = process.env.API_GATEWAY_KEY;
-
-  // Skip authentication if the key is not set in the environment variables (e.g., local development)
-  if (!gatewayKey) {
-    return next();
-  }
+  const gatewayKey = process.env.API_GATEWAY_KEY || process.env.INTERNAL_SECRET_PASSPHRASE || "Syed!Orbit#Azhar_Matrix92$";
 
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -230,6 +225,7 @@ function authenticateApiKey(req, res, next) {
 
   next();
 }
+
 
 // CORE API ROUTE 1: POST `/api/chat`
 app.post('/api/chat', authenticateApiKey, async (req, res) => {
@@ -395,7 +391,7 @@ app.post('/api/chat', authenticateApiKey, async (req, res) => {
 });
 
 // CORE API ROUTE 2: POST `/api/submit-auth`
-app.post('/api/submit-auth', async (req, res) => {
+app.post('/api/submit-auth', authenticateApiKey, async (req, res) => {
   try {
     const { sessionId, name, email } = req.body;
 
@@ -433,7 +429,7 @@ app.post('/api/submit-auth', async (req, res) => {
 });
 
 // CORE API ROUTE 3: POST `/api/slack-webhook-approval`
-app.post('/api/slack-webhook-approval', async (req, res) => {
+app.post('/api/slack-webhook-approval', authenticateApiKey, async (req, res) => {
   try {
     const { secretToken, targetSessionId } = req.body;
 
@@ -522,7 +518,7 @@ app.post('/api/slack-interaction', async (req, res) => {
 });
 
 // CORE API ROUTE 5: GET `/api/session-status/:sessionId`
-app.get('/api/session-status/:sessionId', async (req, res) => {
+app.get('/api/session-status/:sessionId', authenticateApiKey, async (req, res) => {
   try {
     const { sessionId } = req.params;
 

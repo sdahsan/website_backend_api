@@ -1,13 +1,19 @@
 const { v4: uuidv4 } = require('uuid');
 
 const BASE_URL = 'http://localhost:8080';
+const AUTH_TOKEN = 'Syed!Orbit#Azhar_Matrix92$'; // Matches fallback/env key
+
+const HEADERS = {
+  'Content-Type': 'application/json',
+  'Authorization': `Bearer ${AUTH_TOKEN}`
+};
 
 async function runTests() {
   const sessionId = uuidv4();
   console.log(`Generated Test Session ID: ${sessionId}`);
 
   try {
-    // 1. Health Check
+    // 1. Health Check (Unauthenticated)
     console.log('\n--- 1. Testing Health Check ---');
     const healthRes = await fetch(`${BASE_URL}/`);
     console.log(`Health Check Status: ${healthRes.status}`);
@@ -18,7 +24,7 @@ async function runTests() {
     console.log('\n--- 2. Testing Initial Chat ---');
     const chatRes1 = await fetch(`${BASE_URL}/api/chat`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: HEADERS,
       body: JSON.stringify({
         sessionId: sessionId,
         message: 'Hello, are you Syed?'
@@ -30,21 +36,23 @@ async function runTests() {
 
     // 3. Status Check
     console.log('\n--- 3. Testing Session Status ---');
-    const statusRes1 = await fetch(`${BASE_URL}/api/session-status/${sessionId}`);
+    const statusRes1 = await fetch(`${BASE_URL}/api/session-status/${sessionId}`, {
+      headers: {
+        'Authorization': `Bearer ${AUTH_TOKEN}`
+      }
+    });
     console.log(`Status Check Status: ${statusRes1.status}`);
     const statusJson1 = await statusRes1.json();
     console.log('Response:', JSON.stringify(statusJson1, null, 2));
 
     // 4. Force lockout by sending a query that exceeds the budget
-    // Note: Since systemInstruction contains the master profile, the first prompt actually consumed ~1000 tokens already!
-    // Let's check if the first chat response already triggered lockout or if we need another message.
     if (chatJson1.requiresAuthForm) {
       console.log('Session is already locked out (expected since instruction + profile context is large!).');
     } else {
       console.log('\n--- 4. Testing Lockout Trigger ---');
       const chatRes2 = await fetch(`${BASE_URL}/api/chat`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: HEADERS,
         body: JSON.stringify({
           sessionId: sessionId,
           message: 'Can you write a detailed description of your serverless architecture and tell me about all your projects?'
@@ -59,7 +67,7 @@ async function runTests() {
     console.log('\n--- 5. Testing Submit Auth ---');
     const authRes = await fetch(`${BASE_URL}/api/submit-auth`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: HEADERS,
       body: JSON.stringify({
         sessionId: sessionId,
         name: 'Automated Integration Tester',
@@ -72,11 +80,15 @@ async function runTests() {
 
     // 6. Check status is BLOCKED_WAITING_APPROVAL
     console.log('\n--- 6. Verifying Locked Status ---');
-    const statusRes2 = await fetch(`${BASE_URL}/api/session-status/${sessionId}`);
+    const statusRes2 = await fetch(`${BASE_URL}/api/session-status/${sessionId}`, {
+      headers: {
+        'Authorization': `Bearer ${AUTH_TOKEN}`
+      }
+    });
     const statusJson2 = await statusRes2.json();
     console.log('Response:', JSON.stringify(statusJson2, null, 2));
 
-    // 7. Approve via Slack Interactivity Webhook
+    // 7. Approve via Slack Interactivity Webhook (Publicly accessible by Slack)
     console.log('\n--- 7. Testing Slack Approval Webhook ---');
     const slackPayload = {
       actions: [
@@ -97,7 +109,11 @@ async function runTests() {
 
     // 8. Check status is APPROVED_BY_SLACK
     console.log('\n--- 8. Verifying Approved Status ---');
-    const statusRes3 = await fetch(`${BASE_URL}/api/session-status/${sessionId}`);
+    const statusRes3 = await fetch(`${BASE_URL}/api/session-status/${sessionId}`, {
+      headers: {
+        'Authorization': `Bearer ${AUTH_TOKEN}`
+      }
+    });
     const statusJson3 = await statusRes3.json();
     console.log('Response:', JSON.stringify(statusJson3, null, 2));
 
@@ -105,7 +121,7 @@ async function runTests() {
     console.log('\n--- 9. Testing Post-Approval Chat ---');
     const chatRes3 = await fetch(`${BASE_URL}/api/chat`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: HEADERS,
       body: JSON.stringify({
         sessionId: sessionId,
         message: 'Glad to talk to you after approval!'
