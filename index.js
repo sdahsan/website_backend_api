@@ -310,7 +310,7 @@ app.post('/api/chat', authenticateApiKey, async (req, res) => {
     let totalTokens = 0;
     try {
       const tokenResponse = await ai.models.countTokens({
-        model: 'gemini-2.5-flash',
+        model: 'gemini-2.5-flash-lite',
         contents: simulatedHistory
       });
       totalTokens = tokenResponse.totalTokens || 0;
@@ -349,7 +349,7 @@ app.post('/api/chat', authenticateApiKey, async (req, res) => {
 
     try {
       const modelResponse = await ai.models.generateContent({
-        model: 'gemini-2.5-flash',
+        model: 'gemini-2.5-flash-lite',
         contents: chatHistory,
         config: {
           systemInstruction: systemInstructionText,
