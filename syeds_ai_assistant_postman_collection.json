@@ -10,7 +10,7 @@
     "bearer": [
       {
         "key": "token",
-        "value": "{{apiGatewayKey}}",
+        "value": "{{secretToken}}",
         "type": "string"
       }
     ]
@@ -164,7 +164,7 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"secretToken\": \"{{adminPassphrase}}\",\n  \"targetSessionId\": \"{{sessionId}}\"\n}"
+          "raw": "{\n  \"secretToken\": \"{{secretToken}}\",\n  \"targetSessionId\": \"{{sessionId}}\"\n}"
         },
         "url": {
           "raw": "{{baseUrl}}/api/slack-webhook-approval",
@@ -213,13 +213,8 @@
       "type": "string"
     },
     {
-      "key": "apiGatewayKey",
-      "value": "YOUR_API_GATEWAY_KEY_HERE",
-      "type": "string"
-    },
-    {
-      "key": "adminPassphrase",
-      "value": "YOUR_ADMINISTRATIVE_PASSPHRASE_HERE",
+      "key": "secretToken",
+      "value": "YOUR_SECRET_PASSPHRASE_HERE",
       "type": "string"
     }
   ]
