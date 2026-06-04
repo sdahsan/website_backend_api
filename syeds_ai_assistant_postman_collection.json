@@ -164,7 +164,7 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"secretToken\": \"Syed!Orbit#Azhar_Matrix92$\",\n  \"targetSessionId\": \"{{sessionId}}\"\n}"
+          "raw": "{\n  \"secretToken\": \"{{adminPassphrase}}\",\n  \"targetSessionId\": \"{{sessionId}}\"\n}"
         },
         "url": {
           "raw": "{{baseUrl}}/api/slack-webhook-approval",
@@ -214,7 +214,12 @@
     },
     {
       "key": "apiGatewayKey",
-      "value": "Syed!Orbit#Azhar_Matrix92$",
+      "value": "YOUR_API_GATEWAY_KEY_HERE",
+      "type": "string"
+    },
+    {
+      "key": "adminPassphrase",
+      "value": "YOUR_ADMINISTRATIVE_PASSPHRASE_HERE",
       "type": "string"
     }
   ]

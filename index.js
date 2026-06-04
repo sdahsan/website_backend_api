@@ -211,7 +211,12 @@ Operational Directives:
 
 // Authorization Middleware
 function authenticateApiKey(req, res, next) {
-  const gatewayKey = process.env.API_GATEWAY_KEY || process.env.INTERNAL_SECRET_PASSPHRASE || "Syed!Orbit#Azhar_Matrix92$";
+  const gatewayKey = process.env.API_GATEWAY_KEY || process.env.INTERNAL_SECRET_PASSPHRASE;
+
+  if (!gatewayKey) {
+    console.error("CRITICAL CONFIGURATION ERROR: Neither API_GATEWAY_KEY nor INTERNAL_SECRET_PASSPHRASE is defined in the environment variables.");
+    return res.status(500).json({ error: "Server Configuration Error: Authorization credentials are not configured on the host." });
+  }
 
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
