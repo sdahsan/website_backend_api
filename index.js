@@ -233,7 +233,7 @@ function authenticateApiKey(req, res, next) {
 
 
 // CORE API ROUTE 1: POST `/api/chat`
-app.post('/api/chat', async (req, res) => {
+app.post('/api/chat', authenticateApiKey, async (req, res) => {
   try {
     let { sessionId, message } = req.body;
 
@@ -396,7 +396,7 @@ app.post('/api/chat', async (req, res) => {
 });
 
 // CORE API ROUTE 2: POST `/api/submit-auth`
-app.post('/api/submit-auth', async (req, res) => {
+app.post('/api/submit-auth', authenticateApiKey, async (req, res) => {
   try {
     const { sessionId, name, email } = req.body;
 
@@ -523,7 +523,7 @@ app.post('/api/slack-interaction', async (req, res) => {
 });
 
 // CORE API ROUTE 5: GET `/api/session-status/:sessionId`
-app.get('/api/session-status/:sessionId', async (req, res) => {
+app.get('/api/session-status/:sessionId', authenticateApiKey, async (req, res) => {
   try {
     const { sessionId } = req.params;
 
