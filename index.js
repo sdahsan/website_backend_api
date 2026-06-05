@@ -392,7 +392,8 @@ app.post('/api/chat', authenticateApiKey, async (req, res) => {
   } catch (error) {
     console.error('CRITICAL: Chat Orchestration Exception Trace:', error.stack || error.message);
     return res.status(500).json({
-      error: "The infrastructure failed to validate processing constraints."
+      error: "The infrastructure failed to validate processing constraints.",
+      details: error.message
     });
   }
 });
