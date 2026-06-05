@@ -279,7 +279,7 @@ app.post('/api/chat', authenticateApiKey, async (req, res) => {
     // Hard Lock Check
     if (
       record.approval_status === 'BLOCKED_WAITING_APPROVAL' ||
-      (record.total_tokens_consumed > 500 && record.approval_status !== 'APPROVED_BY_SLACK')
+      (record.total_tokens_consumed > 1000 && record.approval_status !== 'APPROVED_BY_SLACK')
     ) {
       // Ensure the database reflects the locked status if not already set
       if (record.approval_status !== 'BLOCKED_WAITING_APPROVAL') {
@@ -321,8 +321,8 @@ app.post('/api/chat', authenticateApiKey, async (req, res) => {
       totalTokens = (chatHistory.length + 1) * 150;
     }
 
-    // Step C: Token Limit Enforcement Logic (>500 Tokens)
-    if (totalTokens > 500 && record.approval_status !== 'APPROVED_BY_SLACK') {
+    // Step C: Token Limit Enforcement Logic (>1000 Tokens)
+    if (totalTokens > 1000 && record.approval_status !== 'APPROVED_BY_SLACK') {
       try {
         await patchSupabaseSession(sessionId, {
           is_approved: false,
@@ -358,9 +358,11 @@ app.post('/api/chat', authenticateApiKey, async (req, res) => {
       });
       botReplyText = modelResponse.text || '';
       
-      // Extract exact metadata from Gemini
-      if (modelResponse.usageMetadata?.totalTokenCount) {
-        finalTokens = modelResponse.usageMetadata.totalTokenCount;
+      // Add generated candidate tokens to pre-flight content tokens (excluding system instruction overhead)
+      if (modelResponse.usageMetadata?.candidatesTokenCount) {
+        finalTokens = totalTokens + modelResponse.usageMetadata.candidatesTokenCount;
+      } else {
+        finalTokens = totalTokens + 150; // Fallback estimate
       }
       res.locals.tokenFootprint = finalTokens;
     } catch (geminiError) {
@@ -549,7 +551,7 @@ app.get('/api/session-status/:sessionId', authenticateApiKey, async (req, res) =
 
     const requiresAuthForm =
       record.approval_status === 'BLOCKED_WAITING_APPROVAL' ||
-      (record.total_tokens_consumed > 500 && record.approval_status !== 'APPROVED_BY_SLACK');
+      (record.total_tokens_consumed > 1000 && record.approval_status !== 'APPROVED_BY_SLACK');
 
     return res.status(200).json({
       sessionId,

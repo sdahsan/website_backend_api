@@ -59,7 +59,7 @@
             "chat"
           ]
         },
-        "description": "Processes a chat turn with Syed's grounded Gemini bot. Automatically manages rolling history, evaluates token consumption, and triggers lockout if the threshold (>500 tokens) is exceeded."
+        "description": "Processes a chat turn with Syed's grounded Gemini bot. Automatically manages rolling history, evaluates token consumption, and triggers lockout if the threshold (>1000 tokens) is exceeded."
       },
       "response": []
     },
