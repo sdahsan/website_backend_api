@@ -298,7 +298,7 @@ app.post('/api/chat', authenticateApiKey, async (req, res) => {
       return res.status(200).json({
         sessionId,
         requiresAuthForm: true,
-        message: "Session quota exceeded. Awaiting admin approval."
+        message: "Session limit exceeded. Awaiting Syed's approval."
       });
     }
 
@@ -337,7 +337,7 @@ app.post('/api/chat', authenticateApiKey, async (req, res) => {
       return res.status(200).json({
         sessionId,
         requiresAuthForm: true,
-        message: "Token quota constraint reached."
+        message: "Token limit exceeded. Awaiting Syed's approval."
       });
     }
 
